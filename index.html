@@ -96,96 +96,122 @@
     </div>
 
     <script>
-        const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
+        // script.js
 
-        async function fetchMovies() {
-            try {
-                // Fetch Bollywood
-                const bollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc`);
-                const bollyData = await bollyRes.json();
+// আপনার TMDB API Key (আগেরটিই ব্যবহার করা হয়েছে)
+const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
 
-                // Fetch Hollywood
-                const hollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&sort_by=popularity.desc`);
-                const hollyData = await hollyRes.json();
+async function fetchMovies() {
+    // লোডিং মেসেজ (যদি প্রয়োজন হয় HTML-এ <div id="loading"></div> যোগ করতে পারেন)
+    const bollywoodGrid = document.getElementById('bollywood-grid');
+    const hollywoodGrid = document.getElementById('hollywood-grid');
+    
+    // clear existing content if any
+    bollywoodGrid.innerHTML = 'Loading movies...';
+    hollywoodGrid.innerHTML = 'Loading movies...';
 
-                const grid = document.getElementById('movie-grid');
-                grid.innerHTML = '';
+    try {
+        // ১. বলিউডের ২০টি মুভি লোড করা (Hindi - hi)
+        const bollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=1`);
+        const bollyData = await bollyRes.json();
+        renderMovies(bollyData.results, 'bollywood-grid'); // slice সরিয়ে ফেলা হলো
 
-                // আপনার রিকোয়েস্ট অনুযায়ী সাজানো: প্রথম ৩টি বলি, পরের ৩টি হলি
-                const bollywood3 = bollyData.results.slice(0, 3);
-                const hollywood3 = hollyData.results.slice(0, 3);
-                
-                // দুই লিস্ট মিলিয়ে সাজানো
-                const finalMix = [...bollywood3, ...hollywood3];
+        // ২. হলিউডের ২০টি মুভি লোড করা (English - en)
+        const hollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&sort_by=popularity.desc&page=1`);
+        const hollyData = await hollyRes.json();
+        renderMovies(hollyData.results, 'hollywood-grid'); // slice সরিয়ে ফেলা হলো
 
-                renderMovies(finalMix, 'movie-grid');
-            } catch (error) {
-                console.error("Error fetching movies:", error);
-            }
+    } catch (err) {
+        console.error("Error fetching data from TMDB:", err);
+        document.getElementById('loading-msg').innerText = "Error loading movies. Please refresh.";
+    }
+}
+
+function renderMovies(movies, gridId) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = ''; // Clear loading message
+
+    if (movies.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:gray;">No movies found.</p>';
+        return;
+    }
+
+    movies.forEach(movie => {
+        // কিছু মুভির পোস্টার নাও থাকতে পারে, সে ক্ষেত্রে চেক করা
+        if (!movie.poster_path) return;
+
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        
+        // মুভির রেটিং (Rating) ⭐ অ্যাড করা হয়েছে, যা দেখতে ভালো লাগে
+        const rating = movie.vote_average ? `<div class="rating">⭐ ${movie.vote_average.toFixed(1)}</div>` : '';
+
+        card.innerHTML = `
+            ${rating}
+            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" loading="lazy">
+            <div class="info">
+                <h3>${movie.title}</h3>
+            </div>
+        `;
+        
+        // মুভিতে ক্লিক করলে অ্যাড ওভারলে দেখানো এবং রিডাইরেক্ট লজিক (আগের মতোই)
+        card.onclick = () => handleAd(movie.title);
+        grid.appendChild(card);
+    });
+}
+
+// আপনার ৫ সেকেন্ডের অ্যাড এবং রিডাইরেক্ট লজিক (আগের মতোই রাখা হয়েছে)
+function handleAd(movieName) {
+    const overlay = document.getElementById('ad-overlay');
+    const timerText = document.getElementById('timer');
+    const watchBtn = document.getElementById('final-btn');
+    
+    overlay.style.display = 'flex';
+    let timeLeft = 5; 
+    watchBtn.style.display = 'none';
+    timerText.style.display = 'block';
+
+    // অ্যাড ওভারলে খোলার পর আপনি চাইলে ব্যাকগ্রাউন্ড স্ক্রলিং বন্ধ করতে পারেন
+    document.body.style.overflow = 'hidden';
+
+    const countdown = setInterval(() => {
+        timeLeft--;
+        timerText.innerText = "Generating link... Wait " + timeLeft + " seconds";
+        
+        if(timeLeft <= 0) {
+            clearInterval(countdown);
+            timerText.style.display = 'none';
+            watchBtn.style.display = 'block';
         }
+    }, 1000);
 
-        function renderMovies(movies, gridId) {
-            const grid = document.getElementById(gridId);
-            movies.forEach(movie => {
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}"><h3>${movie.title}</h3>`;
-                card.onclick = () => handleAd(movie.title);
-                grid.appendChild(card);
-            });
-        }
+    watchBtn.onclick = () => {
+        // অ্যাড স্ক্রিন লুকিয়ে ফেলা এবং ব্যাকগ্রাউন্ড স্ক্রলিং চালু করা
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
 
-        // Search functions
-        function toggleSearch() {
-            const sc = document.getElementById('search-container');
-            sc.style.display = sc.style.display === 'block' ? 'none' : 'block';
-        }
+        // মূল মুভি সাইটে সার্চ লিঙ্ক নিয়ে যাওয়া
+        window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
+    };
+}
 
-        function handleSearch(e) {
-            if (e.key === 'Enter') {
-                const query = document.getElementById('search-input').value;
-                window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(query);
-            }
-        }
+// ক্যাটাগরি মেনু (Bollywood, Hollywood etc.) ক্লিক লজিক
+function handleCategory(language) {
+    // আপনি চাইলে ক্যাটাগরি ক্লিক করলে ওই নির্দিষ্ট ক্যাটাগরি সার্চ করাতে পারেন
+    window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(language);
+}
 
-        function categorySearch(cat) {
-            window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(cat);
-        }
+// Back Button Fix: ইউজার ব্যাক করলে অ্যাড স্ক্রিন চলে যায়
+window.onpageshow = function(event) {
+    if (event.persisted) {
+        document.getElementById('ad-overlay').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+};
 
-        function toggleMenu() {
-            alert("Menu system coming soon!");
-        }
+// সাইট লোড হলে মুভি ডাটা নিয়ে আসবে
+fetchMovies();
 
-        // Ad logic
-        function handleAd(movieName) {
-            const overlay = document.getElementById('ad-overlay');
-            const timerText = document.getElementById('timer');
-            const watchBtn = document.getElementById('final-btn');
-            overlay.style.display = 'flex';
-            let timeLeft = 5;
-            watchBtn.style.display = 'none';
-
-            const countdown = setInterval(() => {
-                timeLeft--;
-                timerText.innerText = "Link is ready in " + timeLeft + "s";
-                if(timeLeft <= 0) {
-                    clearInterval(countdown);
-                    timerText.style.display = 'none';
-                    watchBtn.style.display = 'block';
-                }
-            }, 1000);
-
-            watchBtn.onclick = () => {
-                overlay.style.display = 'none';
-                window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
-            };
-        }
-
-        window.onpageshow = function(event) {
-            document.getElementById('ad-overlay').style.display = 'none';
-        };
-
-        fetchMovies();
     </script>
 </body>
 </html>
