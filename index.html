@@ -15,7 +15,6 @@
 
         body { background: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; }
 
-        /* Header & Navbar */
         header {
             position: sticky; top: 0; width: 100%; z-index: 1000;
             background: rgba(12, 13, 16, 0.9); backdrop-filter: blur(15px);
@@ -26,20 +25,16 @@
         .logo { font-size: 22px; font-weight: bold; color: var(--accent); text-decoration: none; }
         .icon-btn { background: var(--glass); border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; font-size: 18px; }
 
-        /* Search Box */
         #search-container { display: none; padding: 10px 20px; background: #1a1c22; }
-        #search-input { width: 100%; padding: 10px; border-radius: 5px; border: none; outline: none; }
+        #search-input { width: 100%; padding: 10px; border-radius: 5px; border: none; outline: none; background: #333; color: white; }
 
-        /* Category Box */
         .category-box { display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px; scrollbar-width: none; }
         .cat-item { background: var(--glass); padding: 8px 20px; border-radius: 25px; font-size: 13px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; transition: 0.3s; }
         .cat-item:hover { background: var(--accent); color: #000; }
 
-        /* Content Area */
         .content-area { padding: 15px 20px; }
         .section-title { font-size: 16px; color: var(--accent); margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid var(--accent); padding-left: 10px; }
         
-        /* Responsive Grid: Mobile-1 col, Tablet-3 col, PC-6 col */
         .container { 
             display: grid; 
             grid-template-columns: repeat(6, 1fr); 
@@ -55,8 +50,9 @@
         .movie-card:hover { transform: translateY(-5px); border-color: var(--accent); }
         .movie-card img { width: 100%; height: 230px; object-fit: cover; }
         .movie-card h3 { font-size: 12px; margin: 0; text-align: center; padding: 10px; height: 35px; overflow: hidden; }
+        
+        .rating { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #ffcc00; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; z-index: 5; }
 
-        /* Ad Overlay */
         #ad-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         .btn-go { padding: 15px 35px; background: var(--accent); color: #000; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 18px; }
     </style>
@@ -65,27 +61,29 @@
 
     <header>
         <div class="main-nav">
-            <button class="icon-btn" onclick="toggleMenu()">☰</button>
+            <button class="icon-btn" onclick="alert('Menu info coming soon!')">☰</button>
             <a href="#" class="logo">JK<span>Movies</span></a>
             <button class="icon-btn" onclick="toggleSearch()">🔍</button>
         </div>
         
         <div id="search-container">
-            <input type="text" id="search-input" placeholder="Search for movies..." onkeypress="handleSearch(event)">
+            <input type="text" id="search-input" placeholder="Search for movies..." onkeypress="handleSearchEnter(event)">
         </div>
 
         <div class="category-box">
-            <div class="cat-item" onclick="categorySearch('Hollywood')">🎬 Hollywood</div>
-            <div class="cat-item" onclick="categorySearch('Bollywood')">🇮🇳 Bollywood</div>
-            <div class="cat-item" onclick="categorySearch('Hindi Dubbed')">🍿 Hindi Dubbed</div>
-            <div class="cat-item" onclick="categorySearch('Bengali')"> Bengali</div>
+            <div class="cat-item" onclick="handleCategory('Hollywood')">🎬 Hollywood</div>
+            <div class="cat-item" onclick="handleCategory('Bollywood')">🇮🇳 Bollywood</div>
+            <div class="cat-item" onclick="handleCategory('Hindi Dubbed')">🍿 Hindi Dubbed</div>
+            <div class="cat-item" onclick="handleCategory('Bengali')"> Bengali</div>
         </div>
     </header>
 
     <div class="content-area">
-        <div class="section-title">Bollywood & Hollywood Mix</div>
-        <div class="container" id="movie-grid">
-            </div>
+        <div class="section-title">Bollywood Movies</div>
+        <div class="container" id="bollywood-grid"></div>
+
+        <div class="section-title">Hollywood Movies</div>
+        <div class="container" id="hollywood-grid"></div>
     </div>
 
     <div id="ad-overlay">
@@ -96,122 +94,106 @@
     </div>
 
     <script>
-        // script.js
+        const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
 
-// আপনার TMDB API Key (আগেরটিই ব্যবহার করা হয়েছে)
-const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
+        async function fetchMovies() {
+            const bollyGrid = document.getElementById('bollywood-grid');
+            const hollyGrid = document.getElementById('hollywood-grid');
+            
+            bollyGrid.innerHTML = '<p>Loading Bollywood...</p>';
+            hollyGrid.innerHTML = '<p>Loading Hollywood...</p>';
 
-async function fetchMovies() {
-    // লোডিং মেসেজ (যদি প্রয়োজন হয় HTML-এ <div id="loading"></div> যোগ করতে পারেন)
-    const bollywoodGrid = document.getElementById('bollywood-grid');
-    const hollywoodGrid = document.getElementById('hollywood-grid');
-    
-    // clear existing content if any
-    bollywoodGrid.innerHTML = 'Loading movies...';
-    hollywoodGrid.innerHTML = 'Loading movies...';
+            try {
+                // ১. বলিউড
+                const bollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=1`);
+                const bollyData = await bollyRes.json();
+                renderMovies(bollyData.results, 'bollywood-grid');
 
-    try {
-        // ১. বলিউডের ২০টি মুভি লোড করা (Hindi - hi)
-        const bollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=1`);
-        const bollyData = await bollyRes.json();
-        renderMovies(bollyData.results, 'bollywood-grid'); // slice সরিয়ে ফেলা হলো
+                // ২. হলিউড
+                const hollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&sort_by=popularity.desc&page=1`);
+                const hollyData = await hollyRes.json();
+                renderMovies(hollyData.results, 'hollywood-grid');
 
-        // ২. হলিউডের ২০টি মুভি লোড করা (English - en)
-        const hollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&sort_by=popularity.desc&page=1`);
-        const hollyData = await hollyRes.json();
-        renderMovies(hollyData.results, 'hollywood-grid'); // slice সরিয়ে ফেলা হলো
-
-    } catch (err) {
-        console.error("Error fetching data from TMDB:", err);
-        document.getElementById('loading-msg').innerText = "Error loading movies. Please refresh.";
-    }
-}
-
-function renderMovies(movies, gridId) {
-    const grid = document.getElementById(gridId);
-    grid.innerHTML = ''; // Clear loading message
-
-    if (movies.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; color:gray;">No movies found.</p>';
-        return;
-    }
-
-    movies.forEach(movie => {
-        // কিছু মুভির পোস্টার নাও থাকতে পারে, সে ক্ষেত্রে চেক করা
-        if (!movie.poster_path) return;
-
-        const card = document.createElement('div');
-        card.className = 'movie-card';
-        
-        // মুভির রেটিং (Rating) ⭐ অ্যাড করা হয়েছে, যা দেখতে ভালো লাগে
-        const rating = movie.vote_average ? `<div class="rating">⭐ ${movie.vote_average.toFixed(1)}</div>` : '';
-
-        card.innerHTML = `
-            ${rating}
-            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" loading="lazy">
-            <div class="info">
-                <h3>${movie.title}</h3>
-            </div>
-        `;
-        
-        // মুভিতে ক্লিক করলে অ্যাড ওভারলে দেখানো এবং রিডাইরেক্ট লজিক (আগের মতোই)
-        card.onclick = () => handleAd(movie.title);
-        grid.appendChild(card);
-    });
-}
-
-// আপনার ৫ সেকেন্ডের অ্যাড এবং রিডাইরেক্ট লজিক (আগের মতোই রাখা হয়েছে)
-function handleAd(movieName) {
-    const overlay = document.getElementById('ad-overlay');
-    const timerText = document.getElementById('timer');
-    const watchBtn = document.getElementById('final-btn');
-    
-    overlay.style.display = 'flex';
-    let timeLeft = 5; 
-    watchBtn.style.display = 'none';
-    timerText.style.display = 'block';
-
-    // অ্যাড ওভারলে খোলার পর আপনি চাইলে ব্যাকগ্রাউন্ড স্ক্রলিং বন্ধ করতে পারেন
-    document.body.style.overflow = 'hidden';
-
-    const countdown = setInterval(() => {
-        timeLeft--;
-        timerText.innerText = "Generating link... Wait " + timeLeft + " seconds";
-        
-        if(timeLeft <= 0) {
-            clearInterval(countdown);
-            timerText.style.display = 'none';
-            watchBtn.style.display = 'block';
+            } catch (err) {
+                bollyGrid.innerHTML = "Error loading movies.";
+                hollyGrid.innerHTML = "Error loading movies.";
+            }
         }
-    }, 1000);
 
-    watchBtn.onclick = () => {
-        // অ্যাড স্ক্রিন লুকিয়ে ফেলা এবং ব্যাকগ্রাউন্ড স্ক্রলিং চালু করা
-        overlay.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        function renderMovies(movies, gridId) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
 
-        // মূল মুভি সাইটে সার্চ লিঙ্ক নিয়ে যাওয়া
-        window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
-    };
-}
+            movies.forEach(movie => {
+                if (!movie.poster_path) return;
 
-// ক্যাটাগরি মেনু (Bollywood, Hollywood etc.) ক্লিক লজিক
-function handleCategory(language) {
-    // আপনি চাইলে ক্যাটাগরি ক্লিক করলে ওই নির্দিষ্ট ক্যাটাগরি সার্চ করাতে পারেন
-    window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(language);
-}
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                const rating = movie.vote_average ? `<div class="rating">⭐ ${movie.vote_average.toFixed(1)}</div>` : '';
 
-// Back Button Fix: ইউজার ব্যাক করলে অ্যাড স্ক্রিন চলে যায়
-window.onpageshow = function(event) {
-    if (event.persisted) {
-        document.getElementById('ad-overlay').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-};
+                card.innerHTML = `
+                    ${rating}
+                    <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" loading="lazy">
+                    <div class="info">
+                        <h3>${movie.title}</h3>
+                    </div>
+                `;
+                card.onclick = () => handleAd(movie.title);
+                grid.appendChild(card);
+            });
+        }
 
-// সাইট লোড হলে মুভি ডাটা নিয়ে আসবে
-fetchMovies();
+        function handleAd(movieName) {
+            const overlay = document.getElementById('ad-overlay');
+            const timerText = document.getElementById('timer');
+            const watchBtn = document.getElementById('final-btn');
+            
+            overlay.style.display = 'flex';
+            let timeLeft = 5; 
+            watchBtn.style.display = 'none';
+            timerText.style.display = 'block';
+            document.body.style.overflow = 'hidden';
 
+            const countdown = setInterval(() => {
+                timeLeft--;
+                timerText.innerText = "Generating link... Wait " + timeLeft + " seconds";
+                if(timeLeft <= 0) {
+                    clearInterval(countdown);
+                    timerText.style.display = 'none';
+                    watchBtn.style.display = 'block';
+                }
+            }, 1000);
+
+            watchBtn.onclick = () => {
+                overlay.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
+            };
+        }
+
+        function toggleSearch() {
+            const sc = document.getElementById('search-container');
+            sc.style.display = (sc.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function handleSearchEnter(event) {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('search-input').value;
+                if(query) window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(query);
+            }
+        }
+
+        function handleCategory(language) {
+            window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(language);
+        }
+
+        window.onpageshow = function(event) {
+            document.getElementById('ad-overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+
+        // সাইট লোড হলে কল হবে
+        fetchMovies();
     </script>
 </body>
 </html>
