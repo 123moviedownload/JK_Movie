@@ -3,78 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JK Movies - Latest Collection</title>
+    <title>JK Movies - Auto Updates</title>
     <style>
-        /* ডিজাইন: একদম প্রফেশনাল মুভি সাইটের মতো */
-        body { background: #080808; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; }
-        .ad-header { background: #ffcc00; color: #000; padding: 12px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
-        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; padding: 20px; }
-        .movie-card { background: #1a1a1a; border-radius: 10px; overflow: hidden; transition: 0.3s; cursor: pointer; border: 1px solid #333; }
-        .movie-card:hover { transform: translateY(-5px); border-color: #ffcc00; }
-        .movie-card img { width: 100%; height: 220px; object-fit: cover; }
-        .movie-card h3 { font-size: 13px; padding: 10px; margin: 0; text-align: center; height: 36px; overflow: hidden; color: #eee; }
-        .status { text-align: center; margin-top: 100px; font-size: 20px; color: #ffcc00; }
+        /* ডিজাইন: আধুনিক এবং প্রফেশনাল */
+        :root {
+            --bg-color: #0c0d10;
+            --card-bg: #1a1c22;
+            --accent: #ffcc00;
+            --text-main: #ffffff;
+            --text-sub: #b0b3b8;
+        }
+
+        body { 
+            background: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            overflow-x: hidden; 
+        }
+
+        /* সুন্দর হেডার এবং অ্যাড ব্যানার */
+        header {
+            position: sticky; top: 0; width: 100%; z-index: 1000;
+            background: rgba(12, 13, 16, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #2a2c31;
+        }
+        
+        .top-ad-bar {
+            width: 100%; height: 50px;
+            background: var(--accent); color: #000;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 13px;
+        }
+
+        .main-header {
+            padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        
+        .logo { font-size: 24px; font-weight: bold; color: var(--accent); }
+        .logo span { color: var(--text-main); }
+
+        /* মুভি গ্রিড */
+        .content-area { padding: 20px; }
+        .section-title { font-size: 18px; color: var(--text-sub); margin-bottom: 20px; }
+
+        .container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 15px; 
+        }
+
+        /* মুভি কার্ড ডিজাইন */
+        .movie-card { 
+            background: var(--card-bg); border-radius: 12px; overflow: hidden; 
+            cursor: pointer; transition: 0.3s; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .movie-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .movie-card img { width: 100%; height: 210px; object-fit: cover; }
+        .movie-card .info { padding: 8px; }
+        .movie-card h3 { font-size: 12px; margin: 0; text-align: center; height: 35px; overflow: hidden; color: var(--text-main); }
+
+        /* রেটিং এবং সাল */
+        .rating-badge {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.8); color: var(--accent);
+            padding: 3px 6px; border-radius: 5px; font-size: 10px; font-weight: bold;
+        }
+
+        /* অ্যাড ওভারলে (ক্লিক করার পর আসবে) */
+        #ad-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 9999;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .ad-content { width: 300px; height: 250px; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border-radius: 10px; }
+        .btn-go { padding: 12px 25px; background: var(--accent); color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .btn-go:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
-    <div class="ad-header">
-        আপনার ব্যানার বিজ্ঞাপন এখানে (BANNER AD SPACE)
+    <header>
+        <div class="top-ad-bar">
+            আপনার ব্যানার বিজ্ঞাপন (Banner Ad) এখানে
+        </div>
+        <div class="main-header">
+            <div class="logo">JK<span>Movies</span></div>
+            <div style="color: var(--text-sub); font-size: 12px;">Auto Mirror | Live Updates</div>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <div class="section-title">পপুলার মুভি এবং সিরিজ (অটোমেটিক আপডেট)</div>
+        
+        <div id="loading" style="text-align: center; padding: 50px; color: var(--accent);">ডেটা সিঙ্ক হচ্ছে...</div>
+        <div class="container" id="movie-grid"></div>
     </div>
 
-    <div id="status-msg" class="status">মুভি ডাটা সিঙ্ক হচ্ছে, দয়া করে ১০ সেকেন্ড অপেক্ষা করুন...</div>
-    <div class="container" id="movie-grid"></div>
+    <div id="ad-overlay">
+        <h2 style="color: yellow;">মুভি সার্ভার লোড হচ্ছে...</h2>
+        <div class="ad-content">
+            [ আপনার বিজ্ঞাপন এখানে ]
+        </div>
+        <p id="timer" style="color: white;"></p>
+        <button id="final-btn" class="btn-go" style="display:none;">মুভিটি দেখুন (Watch Now)</button>
+    </div>
 
     <script>
-        // যে সাইট থেকে ডাটা আসবে
-        const targetSite = 'https://prmovies.pizza/';
-        // ডাটা আনার জন্য প্রক্সি (এটি সিকিউরিটি বাইপাস করবে)
-        const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetSite);
+        // আপনার TMDB API Key (ইতিমধ্যে যুক্ত করা হয়েছে)
+        const API_KEY = '0940ae0fad7498e6f74514a9691fb571'; 
+        // পপুলার মুভি এবং রেটিং অনুযায়ী ডাটা আনার জন্য লিঙ্ক
+        const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&language=bn-BD&page=1`;
 
-        async function syncMovies() {
+        async function fetchMovies() {
             try {
-                const response = await fetch(proxy);
-                const data = await response.json();
-                const html = data.contents;
-                
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                // মূল সাইটের মুভি আইটেমগুলো খুঁজে বের করা
-                const items = doc.querySelectorAll('.ml-item'); 
+                const res = await fetch(url);
+                const data = await res.json();
                 const grid = document.getElementById('movie-grid');
-                document.getElementById('status-msg').style.display = 'none';
+                document.getElementById('loading').style.display = 'none';
 
-                items.forEach(item => {
-                    const title = item.querySelector('h2').innerText;
-                    // ইমেজ ইউআরএল ঠিক করা
-                    let imgSrc = item.querySelector('img').getAttribute('data-original') || item.querySelector('img').src;
-                    // যদি ইমেজ লিঙ্ক আধা থাকে তবে পূর্ণ করা
-                    if (imgSrc.startsWith('/')) imgSrc = 'https://prmovies.pizza' + imgSrc;
-                    
-                    const originalLink = item.querySelector('a').href.replace(window.location.origin, 'https://prmovies.pizza');
-
+                data.results.forEach(movie => {
                     const card = document.createElement('div');
                     card.className = 'movie-card';
                     card.innerHTML = `
-                        <img src="${imgSrc}" alt="${title}">
-                        <h3>${title}</h3>
+                        <div class="rating-badge">⭐ ${movie.vote_average.toFixed(1)}</div>
+                        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
+                        <div class="info">
+                            <h3>${movie.title}</h3>
+                        </div>
                     `;
                     
-                    // ক্লিকে আপনার অ্যাড বা মুভি লিঙ্কে যাওয়ার লজিক
+                    // ক্লিকে অ্যাড দেখানো এবং রিডাইরেক্ট লজিক
                     card.onclick = () => {
-                        window.location.href = originalLink;
+                        showAd(movie.title);
                     };
-                    
                     grid.appendChild(card);
                 });
-
-            } catch (error) {
-                document.getElementById('status-msg').innerText = "সার্ভার রেসপন্স দিচ্ছে না। পেজটি রিফ্রেশ দিন।";
+            } catch (err) {
+                document.getElementById('loading').innerText = "সার্ভার স্লো, আবার চেষ্টা করুন।";
             }
         }
 
-        syncMovies();
+        function showAd(movieName) {
+            const overlay = document.getElementById('ad-overlay');
+            const timer = document.getElementById('timer');
+            const btn = document.getElementById('final-btn');
+            
+            overlay.style.display = 'flex';
+            let count = 5;
+            btn.style.display = 'none';
+            timer.style.display = 'block';
+
+            const countdown = setInterval(() => {
+                count--;
+                timer.innerText = count + " সেকেন্ড অপেক্ষা করুন...";
+                if(count <= 0) {
+                    clearInterval(countdown);
+                    timer.style.display = 'none';
+                    btn.style.display = 'block';
+                }
+            }, 1000);
+
+            btn.onclick = () => {
+                // সরাসরি মুভি সাইটের সার্চে নিয়ে যাবে (prmovies.pizza)
+                window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
+            };
+        }
+
+        fetchMovies();
     </script>
 </body>
 </html>
