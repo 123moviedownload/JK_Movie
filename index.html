@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JK Movies - Premium Content</title>
+    
+    <title>JK Movies - Watch Latest Bollywood & Hollywood Movies Online Free</title>
+    <meta name="description" content="Watch the latest Bollywood, Hollywood, Hindi Dubbed, and Bengali movies online for free on JK Movies. High-quality streaming and daily updates.">
+    <meta name="keywords" content="JK Movies, Watch Online, Free Movies, Bollywood Movies 2026, Hollywood Hindi Dubbed, South Indian Movies, New Movie Releases">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="JK Movies - Premium Movie Portal">
+    <meta property="og:description" content="Stream your favorite movies for free.">
+    <meta property="og:type" content="website">
+
     <style>
         :root {
             --bg-color: #0c0d10;
@@ -24,6 +32,9 @@
         .main-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; }
         .logo { font-size: 22px; font-weight: bold; color: var(--accent); text-decoration: none; }
         .icon-btn { background: var(--glass); border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+
+        /* মেনু বাটন অফ করার জন্য স্টাইল */
+        .disabled-btn { opacity: 0.5; cursor: default !important; }
 
         #search-container { display: none; padding: 10px 20px; background: #1a1c22; }
         #search-input { width: 100%; padding: 10px; border-radius: 5px; border: none; outline: none; background: #333; color: white; }
@@ -53,10 +64,8 @@
         
         .rating { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #ffcc00; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; z-index: 5; }
 
-        /* ক্লিক অ্যাড ওভারলে */
         #ad-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* অটোমেটিক ৩০ সেকেন্ড পপ-আপ অ্যাড */
         #auto-popup-ad { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); z-index: 10001; 
@@ -79,7 +88,7 @@
 
     <header>
         <div class="main-nav">
-            <button class="icon-btn" onclick="alert('Menu info coming soon!')">☰</button>
+            <button class="icon-btn disabled-btn" style="pointer-events: none;">☰</button>
             <a href="#" class="logo">JK<span>Movies</span></a>
             <button class="icon-btn" onclick="toggleSearch()">🔍</button>
         </div>
@@ -121,42 +130,37 @@
     <script>
         const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
 
-        // --- অটোমেটিক অ্যাড লজিক ---
-        function showAutoAd() {
+        // অটোমেটিক পপ-আপ অ্যাড
+        setInterval(() => {
             document.getElementById('auto-popup-ad').style.display = 'flex';
-        }
+        }, 30000);
 
         function closeAutoAd() {
             document.getElementById('auto-popup-ad').style.display = 'none';
         }
 
-        // প্রতি ৩০ সেকেন্ড পর পর অ্যাড দেখাবে (৩০০০০ মিলিসেকেন্ড = ৩০ সেকেন্ড)
-        setInterval(showAutoAd, 30000);
-
-        // --- মুভি ডাটা ফেচ লজিক ---
+        // মুভি লোড করার ফাংশন (২০০টি মুভি লোড করার লজিক)
         async function fetchMovies() {
             const bollyGrid = document.getElementById('bollywood-grid');
             const hollyGrid = document.getElementById('hollywood-grid');
-            bollyGrid.innerHTML = '<p>Loading Bollywood...</p>';
-            hollyGrid.innerHTML = '<p>Loading Hollywood...</p>';
-
-            try {
-                const bollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=1`);
+            
+            // Bollywood ২০০ মুভি (১০ পেজ লোড হবে)
+            for(let i=1; i<=10; i++) {
+                const bollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=${i}`);
                 const bollyData = await bollyRes.json();
                 renderMovies(bollyData.results, 'bollywood-grid');
+            }
 
-                const hollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&sort_by=popularity.desc&page=1`);
+            // Hollywood ২০০ মুভি (১০ পেজ লোড হবে)
+            for(let i=1; i<=10; i++) {
+                const hollyRes = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&sort_by=popularity.desc&page=${i}`);
                 const hollyData = await hollyRes.json();
                 renderMovies(hollyData.results, 'hollywood-grid');
-            } catch (err) {
-                bollyGrid.innerHTML = "Error loading movies.";
-                hollyGrid.innerHTML = "Error loading movies.";
             }
         }
 
         function renderMovies(movies, gridId) {
             const grid = document.getElementById(gridId);
-            grid.innerHTML = '';
             movies.forEach(movie => {
                 if (!movie.poster_path) return;
                 const card = document.createElement('div');
@@ -180,11 +184,10 @@
             let timeLeft = 5; 
             watchBtn.style.display = 'none';
             timerText.style.display = 'block';
-            document.body.style.overflow = 'hidden';
 
             const countdown = setInterval(() => {
                 timeLeft--;
-                timerText.innerText = "Generating link... Wait " + timeLeft + " seconds";
+                timerText.innerText = "Link is ready in " + timeLeft + "s";
                 if(timeLeft <= 0) {
                     clearInterval(countdown);
                     timerText.style.display = 'none';
@@ -194,7 +197,6 @@
 
             watchBtn.onclick = () => {
                 overlay.style.display = 'none';
-                document.body.style.overflow = 'auto';
                 window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
             };
         }
@@ -214,11 +216,6 @@
         function handleCategory(language) {
             window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(language);
         }
-
-        window.onpageshow = function(event) {
-            document.getElementById('ad-overlay').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        };
 
         fetchMovies();
     </script>
