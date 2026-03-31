@@ -3,121 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JK Movies - Watch Free Online</title>
+    <title>JK Movies - Auto Updates</title>
     <style>
         :root {
             --bg-color: #0c0d10;
             --card-bg: #1a1c22;
             --accent: #ffcc00;
             --text-main: #ffffff;
-            --text-sub: #b0b3b8;
         }
 
-        body { 
-            background: var(--bg-color); 
-            color: var(--text-main); 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            margin: 0; 
-            overflow-x: hidden; 
-        }
+        body { background: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
 
-        header {
-            position: sticky; top: 0; width: 100%; z-index: 1000;
-            background: rgba(12, 13, 16, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #2a2c31;
-        }
-        
-        .top-ad-bar {
-            width: 100%; height: 50px;
-            background: var(--accent); color: #000;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 13px;
-        }
-
-        .main-header {
-            padding: 15px 20px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        
-        .logo { font-size: 24px; font-weight: bold; color: var(--accent); }
+        /* Header & Ad Bar */
+        header { position: sticky; top: 0; width: 100%; z-index: 1000; background: rgba(12, 13, 16, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #2a2c31; }
+        .top-ad-bar { width: 100%; height: 50px; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; }
+        .main-header { padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 24px; font-weight: bold; color: var(--accent); text-decoration: none; }
         .logo span { color: var(--text-main); }
 
+        /* Movie Grid */
         .content-area { padding: 20px; }
-        .section-title { font-size: 18px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-
-        .container { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-            gap: 15px; 
-        }
-
-        .movie-card { 
-            background: var(--card-bg); border-radius: 12px; overflow: hidden; 
-            cursor: pointer; transition: 0.3s; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        .movie-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .movie-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; position: relative; }
+        .movie-card:hover { transform: translateY(-5px); }
         .movie-card img { width: 100%; height: 210px; object-fit: cover; }
-        .movie-card .info { padding: 8px; }
-        .movie-card h3 { font-size: 12px; margin: 0; text-align: center; height: 35px; overflow: hidden; color: var(--text-main); }
-
-        .rating-badge {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.8); color: var(--accent);
-            padding: 3px 6px; border-radius: 5px; font-size: 10px; font-weight: bold;
-        }
+        .movie-card h3 { font-size: 12px; margin: 0; text-align: center; padding: 10px; height: 35px; overflow: hidden; }
 
         /* Ad Overlay */
         #ad-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 9999;
+            background: rgba(0,0,0,0.98); z-index: 9999;
             flex-direction: column; align-items: center; justify-content: center;
         }
-        .ad-content { width: 320px; height: 250px; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border-radius: 10px; }
-        .btn-go { padding: 15px 35px; background: var(--accent); color: #000; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; }
-        
-        #loading { text-align: center; padding: 50px; color: var(--accent); font-weight: bold; }
+        .ad-box { width: 320px; height: 250px; background: #fff; margin-bottom: 20px; border-radius: 10px; }
+        .btn-go { padding: 15px 35px; background: var(--accent); color: #000; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 18px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="top-ad-bar">
-            PLACE YOUR BANNER AD HERE
-        </div>
+        <div class="top-ad-bar">YOUR AD HERE</div>
         <div class="main-header">
-            <div class="logo">JK<span>Movies</span></div>
-            <div style="color: var(--text-sub); font-size: 12px;">Auto Mirror | Indian & Global</div>
+            <a href="#" class="logo">JK<span>Movies</span></a>
         </div>
     </header>
 
     <div class="content-area">
-        <div class="section-title">New Indian & Trending Movies</div>
-        
-        <div id="loading">SYNCING DATA...</div>
+        <div id="loading" style="text-align:center; padding:50px;">SYNCING MOVIES...</div>
         <div class="container" id="movie-grid"></div>
     </div>
 
     <div id="ad-overlay">
-        <h2 style="color: #ffcc00;">Server Connecting...</h2>
-        <div class="ad-content">
-            [ AD SPACE ]
-        </div>
-        <p id="timer" style="color: white; font-size: 16px;"></p>
+        <h2 style="color: var(--accent);">Loading Movie Server...</h2>
+        <div class="ad-box">
+            </div>
+        <p id="timer" style="color:white;"></p>
         <button id="final-btn" class="btn-go" style="display:none;">WATCH MOVIE NOW</button>
     </div>
 
     <script>
-        const API_KEY = '0940ae0fad7498e6f74514a9691fb571'; 
-        
-        // Indian Movies (Hindi, Bengali, South) prioritize করার জন্য API URL
-        const indianUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi|te|ta|bn&sort_by=popularity.desc&page=1`;
+        const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
+        const fetchUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi|bn|ta|te&sort_by=popularity.desc&page=1`;
 
         async function fetchMovies() {
             try {
-                const res = await fetch(indianUrl);
+                const res = await fetch(fetchUrl);
                 const data = await res.json();
                 const grid = document.getElementById('movie-grid');
                 document.getElementById('loading').style.display = 'none';
@@ -125,49 +75,46 @@
                 data.results.forEach(movie => {
                     const card = document.createElement('div');
                     card.className = 'movie-card';
-                    card.innerHTML = `
-                        <div class="rating-badge">⭐ ${movie.vote_average.toFixed(1)}</div>
-                        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
-                        <div class="info">
-                            <h3>${movie.title}</h3>
-                        </div>
-                    `;
-                    
-                    card.onclick = () => {
-                        showAd(movie.title);
-                    };
+                    card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}"><h3>${movie.title}</h3>`;
+                    card.onclick = () => handleAd(movie.title);
                     grid.appendChild(card);
                 });
-            } catch (err) {
-                document.getElementById('loading').innerText = "SERVER BUSY, REFRESH PAGE.";
-            }
+            } catch (err) { console.log(err); }
         }
 
-        function showAd(movieName) {
+        function handleAd(movieName) {
             const overlay = document.getElementById('ad-overlay');
-            const timer = document.getElementById('timer');
-            const btn = document.getElementById('final-btn');
+            const timerText = document.getElementById('timer');
+            const watchBtn = document.getElementById('final-btn');
             
             overlay.style.display = 'flex';
-            let count = 5;
-            btn.style.display = 'none';
-            timer.style.display = 'block';
+            let timeLeft = 5;
+            watchBtn.style.display = 'none';
 
             const countdown = setInterval(() => {
-                count--;
-                timer.innerText = "Please wait " + count + " seconds...";
-                if(count <= 0) {
+                timeLeft--;
+                timerText.innerText = "Please wait " + timeLeft + " seconds...";
+                if(timeLeft <= 0) {
                     clearInterval(countdown);
-                    timer.style.display = 'none';
-                    btn.style.display = 'block';
+                    timerText.style.display = 'none';
+                    watchBtn.style.display = 'block';
                 }
             }, 1000);
 
-            btn.onclick = () => {
-                // Redirect to Movie Site
-                window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
+            watchBtn.onclick = () => {
+                // ১. এড স্ক্রিন রিমুভ করা (যাতে ব্যাক করলে না আসে)
+                overlay.style.display = 'none';
+                
+                // ২. ডাইরেক্ট লিঙ্কে পাঠানো
+                const targetUrl = "https://prmovies.pizza/?s=" + encodeURIComponent(movieName);
+                window.location.href = targetUrl;
             };
         }
+
+        // ব্রাউজারের ব্যাক বাটন ফিক্স: ইউজার ফিরে আসলে অ্যাড স্ক্রিন বন্ধ থাকবে
+        window.onpageshow = function(event) {
+            document.getElementById('ad-overlay').style.display = 'none';
+        };
 
         fetchMovies();
     </script>
