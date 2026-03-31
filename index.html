@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App Interface</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* বিজ্ঞাপনের জন্য জায়গা (Top Ad) */
+        .ad-container-top {
+            width: 100%;
+            height: 60px;
+            background-color: #f1f1f1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #ccc;
+        }
+
+        /* মূল ওয়েবসাইট দেখানোর ফ্রেম */
+        #web-container {
+            width: 100%;
+            height: calc(100% - 110px); /* অ্যাড এর সাইজ অনুযায়ী অ্যাডজাস্ট করা */
+            border: none;
+        }
+
+        /* নিচের বিজ্ঞাপনের জায়গা (Bottom Ad) */
+        .ad-container-bottom {
+            width: 100%;
+            height: 50px;
+            background-color: #f1f1f1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid #ccc;
+        }
+
+        .ad-placeholder {
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ad-container-top">
+        <div class="ad-placeholder">
+            TOP BANNER AD GOES HERE
+        </div>
+    </div>
+
+    <iframe id="web-container" src="https://prmovies.pizza/" allowfullscreen></iframe>
+
+    <div class="ad-container-bottom">
+        <div class="ad-placeholder">
+            BOTTOM STICKY AD GOES HERE
+        </div>
+    </div>
+
+    <script>
+        // পরবর্তীকালে লিঙ্ক চেঞ্জ করতে চাইলে নিচের ভ্যারিয়েবলটি আপডেট করুন
+        const mainSiteUrl = "https://prmovies.pizza/";
+        
+        // যদি আপনি চান অটোমেটিক লিঙ্ক আপডেট হবে, তবে এখানে লজিক যোগ করতে পারেন
+        document.getElementById('web-container').src = mainSiteUrl;
+    </script>
+
+</body>
+</html>
