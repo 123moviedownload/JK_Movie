@@ -1,78 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web App Interface</title>
+    <title>JK Movie Player</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
+            width: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            background-color: #000;
         }
 
-        /* বিজ্ঞাপনের জন্য জায়গা (Top Ad) */
-        .ad-container-top {
+        /* নিচের লেয়ারে মুভি সাইট (যদি লোড হয়) */
+        #movie-frame {
             width: 100%;
-            height: 60px;
-            background-color: #f1f1f1;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid #ccc;
-        }
-
-        /* মূল ওয়েবসাইট দেখানোর ফ্রেম */
-        #web-container {
-            width: 100%;
-            height: calc(100% - 110px); /* অ্যাড এর সাইজ অনুযায়ী অ্যাডজাস্ট করা */
+            height: 100%;
             border: none;
+            z-index: 1;
         }
 
-        /* নিচের বিজ্ঞাপনের জায়গা (Bottom Ad) */
-        .ad-container-bottom {
-            width: 100%;
-            height: 50px;
-            background-color: #f1f1f1;
+        /* উপরের বিজ্ঞাপনের লেয়ার (Floating Layer) */
+        .my-ad-layer {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999; /* সবকিছুর উপরে থাকবে */
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-top: 1px solid #ccc;
+            min-width: 320px;
         }
 
-        .ad-placeholder {
-            color: #888;
-            font-size: 14px;
+        .close-ad {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 25px;
+        }
+
+        /* যদি Iframe ব্লক থাকে তবে মেসেজ */
+        .error-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 0;
         }
     </style>
 </head>
 <body>
 
-    <div class="ad-container-top">
-        <div class="ad-placeholder">
-            TOP BANNER AD GOES HERE
-        </div>
-    </div>
-
-    <iframe id="web-container" src="https://prmovies.pizza/" allowfullscreen></iframe>
-
-    <div class="ad-container-bottom">
-        <div class="ad-placeholder">
-            BOTTOM STICKY AD GOES HERE
-        </div>
-    </div>
-
-    <script>
-        // পরবর্তীকালে লিঙ্ক চেঞ্জ করতে চাইলে নিচের ভ্যারিয়েবলটি আপডেট করুন
-        const mainSiteUrl = "https://prmovies.pizza/";
+    <div class="my-ad-layer" id="adLayer">
+        <div class="close-ad" onclick="document.getElementById('adLayer').style.display='none'">X</div>
+        <div style="color: #333; font-size: 12px; margin-bottom: 5px;">SPONSORED AD</div>
         
-        // যদি আপনি চান অটোমেটিক লিঙ্ক আপডেট হবে, তবে এখানে লজিক যোগ করতে পারেন
-        document.getElementById('web-container').src = mainSiteUrl;
-    </script>
+        <div id="ad-content">
+            <p style="color: blue;">আপনার অ্যাড এখানে দেখাবে</p>
+            </div>
+    </div>
+
+    <iframe id="movie-frame" src="https://prmovies.pizza/" allowfullscreen></iframe>
+
+    <div class="error-overlay">
+        <p>মুভিটি সরাসরি লোড না হলে নিচের বাটনে ক্লিক করুন:</p>
+        <a href="https://prmovies.pizza/" style="color: yellow; font-size: 20px;">সরাসরি মুভি দেখুন</a>
+    </div>
 
 </body>
 </html>
