@@ -17,8 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Dhurandhar 2 Full Movie Download Vegamovies 720p 480p 1080p - JK Movies</title>
-    <meta name="description" content="Watch & Download Dhurandhar 2 Full Movie in HD. Get the best experience better than Vegamovies & Filmyzilla.">
-    <meta name="keywords" content="Dhurandhar 2 Full Movie Download Vegamovies, Dhurandhar 2 Filmyzilla, JK Movies">
+    <meta name="description" content="Watch & Download Dhurandhar 2 Full Movie in HD. Best experience on JK Movies.">
     <meta name="robots" content="index, follow">
 
     <style>
@@ -53,11 +52,7 @@
         .content-area { padding: 15px 20px; }
         .section-title { font-size: 16px; color: var(--accent); margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid var(--accent); padding-left: 10px; }
         
-        .container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 30px; }
-
-        @media (max-width: 1024px) { .container { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 768px) { .container { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 480px) { .container { grid-template-columns: repeat(2, 1fr); } }
+        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
 
         .movie-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; position: relative; border: 1px solid #333; }
         .movie-card:hover { transform: translateY(-5px); border-color: var(--accent); }
@@ -66,11 +61,12 @@
         
         .rating { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #ffcc00; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; z-index: 5; }
 
-        /* অ্যাড পপ-আপ স্টাইল */
+        /* ৫ সেকেন্ডের অ্যাড ওভারলে */
         #ad-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999; color: white;
+            background: rgba(0,0,0,0.95); z-index: 10001; color: white;
             flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
         }
 
         .ad-box { background: white; padding: 10px; border-radius: 10px; margin-bottom: 20px; }
@@ -99,12 +95,12 @@
             </script>
             <script type="text/javascript" src="https://www.highperformanceformat.com/723bc09c3bb81cc37dcc39806740dfcd/invoke.js"></script>
         </div>
-        <p id="ad-timer">Redirecting in 5 seconds...</p>
+        <p id="ad-timer" style="font-weight: bold; font-size: 18px;">Redirecting in 5 seconds...</p>
     </div>
 
     <header>
         <div class="main-nav">
-            <button class="icon-btn" onclick="alert('Menu coming soon!')">☰</button>
+            <button class="icon-btn">☰</button>
             <a href="#" class="logo">JK<span>Movies</span></a>
             <button class="icon-btn" onclick="toggleSearch()">🔍</button>
         </div>
@@ -139,18 +135,24 @@
     <script>
         const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
 
+        // সাইট থেকে ফিরে আসলে অ্যাড রিমুভ করার ম্যাজিক লজিক
+        window.addEventListener('pageshow', function(event) {
+            const overlay = document.getElementById('ad-overlay');
+            overlay.style.display = 'none'; // ফিরে আসলেই অ্যাড বন্ধ হবে
+        });
+
         function toggleSearch() {
             const sc = document.getElementById('search-container');
             sc.style.display = (sc.style.display === 'block') ? 'none' : 'block';
         }
 
-        // অ্যাড টাইমার ফাংশন
         function movieClickWithAd(targetUrl) {
             const overlay = document.getElementById('ad-overlay');
             const timerText = document.getElementById('ad-timer');
             let timeLeft = 5;
 
             overlay.style.display = 'flex';
+            timerText.innerText = `Redirecting in 5 seconds...`;
             
             const timer = setInterval(() => {
                 timeLeft--;
