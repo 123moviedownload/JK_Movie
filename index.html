@@ -44,6 +44,7 @@
         .movie-card img { width: 100%; height: 230px; object-fit: cover; }
         .movie-card h3 { font-size: 12px; margin: 0; text-align: center; padding: 10px; height: 35px; overflow: hidden; color: #fff; }
         .rating { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #ffcc00; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; z-index: 5; }
+        
         #ad-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10001; color: white; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .loader { text-align: center; padding: 20px; display: none; color: var(--accent); font-weight: bold; }
     </style>
@@ -88,7 +89,6 @@
         let currentMode = 'Home';
         let searchKeyword = '';
 
-        // Back button fix using History API
         window.onpopstate = function(event) {
             if (event.state && event.state.mode) {
                 currentMode = event.state.mode;
@@ -134,10 +134,7 @@
             page = 1;
             currentMode = type;
             document.getElementById('movie-grid').innerHTML = '';
-            
-            // Push to history for back button
             history.pushState({ mode: type }, type, "");
-
             const titles = { 'Home': '🆕 New Releases', 'Trending': '🔥 Trending Now', 'Hollywood': '🎬 Hollywood Hits', 'Bollywood': '🇮🇳 Bollywood Blockbusters' };
             document.getElementById('main-title').innerText = titles[type] || `Results for ${type}`;
             loadMovies();
@@ -156,27 +153,37 @@
 
             try {
                 let movies = [];
+                
+                // logic for Mixed Content (Home & Trending)
                 if(currentMode === 'Home' || currentMode === 'Trending') {
                     const endpoint = currentMode === 'Home' ? 'now_playing' : 'popular';
+                    
                     const [hRes, bRes] = await Promise.all([
                         fetch(`https://api.themoviedb.org/3/movie/${endpoint}?api_key=${API_KEY}&with_original_language=en&page=${page}`),
-                        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=primary_release_date.desc&page=${page}`)
+                        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=${page}`)
                     ]);
+
                     const hData = await hRes.json();
                     const bData = await bRes.json();
-                    for(let i=0; i<hData.results.length; i++) {
-                        if(bData.results[i]) movies.push(bData.results[i]);
-                        if(hData.results[i]) movies.push(hData.results[i]);
+
+                    // Mixing Logic: Interleave Hollywood and Bollywood
+                    const maxLength = Math.max(hData.results.length, bData.results.length);
+                    for(let i=0; i < maxLength; i++) {
+                        if(bData.results[i]) movies.push(bData.results[i]); // First Bollywood
+                        if(hData.results[i]) movies.push(hData.results[i]); // Then Hollywood
                     }
-                } else if(currentMode === 'Hollywood') {
-                    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&page=${page}`);
+                } 
+                else if(currentMode === 'Hollywood') {
+                    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&page=${page}&sort_by=popularity.desc`);
                     const data = await res.json();
                     movies = data.results;
-                } else if(currentMode === 'Bollywood') {
-                    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&page=${page}`);
+                } 
+                else if(currentMode === 'Bollywood') {
+                    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&page=${page}&sort_by=popularity.desc`);
                     const data = await res.json();
                     movies = data.results;
-                } else if(currentMode === 'Search') {
+                } 
+                else if(currentMode === 'Search') {
                     const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${searchKeyword}&page=${page}`);
                     const data = await res.json();
                     movies = data.results;
@@ -184,7 +191,8 @@
 
                 renderMovies(movies);
                 page++;
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Fetch Error:", err); }
+            
             isLoading = false;
             document.getElementById('infinite-loader').style.display = 'none';
         }
@@ -195,7 +203,12 @@
                 if (!movie.poster_path) return;
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.innerHTML = `<div class="rating">⭐ ${movie.vote_average.toFixed(1)}</div><img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}"><h3>${movie.title}</h3>`;
+                const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+                card.innerHTML = `
+                    <div class="rating">⭐ ${rating}</div>
+                    <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" loading="lazy">
+                    <h3>${movie.title}</h3>
+                `;
                 card.onclick = () => movieClickWithAd(movie.title);
                 grid.appendChild(card);
             });
@@ -211,6 +224,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     overlay.style.display = 'none';
+                    // Redirecting to your target site
                     window.location.href = "https://prmovies.pizza/?s=" + encodeURIComponent(title);
                 }
             }, 1000);
@@ -222,18 +236,17 @@
                 if(searchKeyword) {
                     document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
                     resetAndLoad('Search');
-                    document.getElementById('main-title').innerText = `Search: ${searchKeyword}`;
                 }
             }
         }
 
         window.addEventListener('scroll', () => {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) {
                 loadMovies();
             }
         });
 
-        // Initialize with Home State
+        // Start App
         history.replaceState({ mode: 'Home' }, 'Home', "");
         loadMovies();
     </script>
