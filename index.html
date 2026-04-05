@@ -135,7 +135,7 @@
             currentMode = type;
             document.getElementById('movie-grid').innerHTML = '';
             history.pushState({ mode: type }, type, "");
-            const titles = { 'Home': '🆕 New Releases', 'Trending': '🔥 Trending Now', 'Hollywood': '🎬 Hollywood Hits', 'Bollywood': '🇮🇳 Bollywood Blockbusters' };
+            const titles = { 'Home': '🆕 All ', 'Trending': '🔥 Trending Now', 'Hollywood': '🎬 Hollywood Hits', 'Bollywood': '🇮🇳 Bollywood Blockbusters' };
             document.getElementById('main-title').innerText = titles[type] || `Results for ${type}`;
             loadMovies();
         }
