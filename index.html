@@ -31,8 +31,12 @@
         #search-container { display: none; padding: 10px 20px; background: #1a1c22; }
         #search-input { width: 100%; padding: 10px; border-radius: 5px; border: none; background: #333; color: white; }
         .category-box { display: flex; gap: 10px; overflow-x: auto; padding: 10px 20px; scrollbar-width: none; }
-        .cat-item { background: var(--glass); padding: 8px 20px; border-radius: 25px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.3s; border: 1px solid transparent; }
-        .cat-item:hover { background: var(--accent); color: #000; }
+        
+        /* Highlight Style */
+        .cat-item { background: var(--glass); padding: 8px 20px; border-radius: 25px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); }
+        .cat-item.active { background: var(--accent); color: #000; font-weight: bold; border-color: #fff; box-shadow: 0 0 10px rgba(255, 204, 0, 0.5); }
+        .cat-item:hover { border-color: var(--accent); }
+
         .content-area { padding: 15px 20px; }
         .section-title { font-size: 16px; color: var(--accent); margin: 20px 0 10px; text-transform: uppercase; border-left: 3px solid var(--accent); padding-left: 10px; }
         .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
@@ -65,9 +69,9 @@
         </div>
         <div id="search-container"><input type="text" id="search-input" placeholder="Search movies..." onkeypress="handleSearchEnter(event)"></div>
         <div class="category-box">
-            <div class="cat-item" onclick="showCategoryAd('Trending')">🔥 Trending Now</div>
-            <div class="cat-item" onclick="showCategoryAd('Hollywood')">🎬 Hollywood</div>
-            <div class="cat-item" onclick="showCategoryAd('Bollywood')">🇮🇳 Bollywood</div>
+            <div id="cat-Trending" class="cat-item active" onclick="showCategoryAd('Trending')">🔥 Trending Now</div>
+            <div id="cat-Hollywood" class="cat-item" onclick="showCategoryAd('Hollywood')">🎬 Hollywood</div>
+            <div id="cat-Bollywood" class="cat-item" onclick="showCategoryAd('Bollywood')">🇮🇳 Bollywood</div>
         </div>
     </header>
 
@@ -81,10 +85,14 @@
         const API_KEY = '0940ae0fad7498e6f74514a9691fb571';
         let page = 1;
         let isLoading = false;
-        let currentMode = 'Mixed'; // Mixed, Hollywood, Bollywood, Search
+        let currentMode = 'Trending';
         let searchKeyword = '';
 
-        window.onpageshow = () => { document.getElementById('ad-overlay').style.display = 'none'; };
+        window.onpageshow = () => { 
+            document.getElementById('ad-overlay').style.display = 'none'; 
+            // ফিরে আসলে আগের মোড হাইলাইট করা
+            updateHighlight(currentMode);
+        };
 
         function toggleSearch() {
             const sc = document.getElementById('search-container');
@@ -92,13 +100,21 @@
             if(sc.style.display === 'block') document.getElementById('search-input').focus();
         }
 
+        // হাইলাইট আপডেট করার ফাংশন
+        function updateHighlight(mode) {
+            document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+            const activeEl = document.getElementById('cat-' + mode);
+            if (activeEl) activeEl.classList.add('active');
+        }
+
         function updateSEO(name) {
             const year = new Date().getFullYear();
             document.title = `${name} Full Movie Download HD - JK Movies ${year}`;
-            document.getElementById('dyn-desc').setAttribute('content', `Download ${name} and latest Trending movies in 720p/1080p at JK Movies.`);
+            document.getElementById('dyn-desc').setAttribute('content', `Download ${name} at JK Movies.`);
         }
 
         function showCategoryAd(type) {
+            updateHighlight(type); // ক্লিকে সাথে সাথেই হাইলাইট
             const overlay = document.getElementById('ad-overlay');
             let timeLeft = 5;
             overlay.style.display = 'flex';
@@ -128,14 +144,13 @@
 
             try {
                 let movies = [];
-                if(currentMode === 'Trending' || currentMode === 'Mixed') {
+                if(currentMode === 'Trending') {
                     const [hRes, bRes] = await Promise.all([
                         fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=en&page=${page}`),
                         fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=hi&page=${page}`)
                     ]);
                     const hData = await hRes.json();
                     const bData = await bRes.json();
-                    // 1:1 Mixing Logic
                     for(let i=0; i<hData.results.length; i++) {
                         if(bData.results[i]) movies.push(bData.results[i]);
                         if(hData.results[i]) movies.push(hData.results[i]);
@@ -181,7 +196,7 @@
             overlay.style.display = 'flex';
             const timer = setInterval(() => {
                 timeLeft--;
-                document.getElementById('ad-timer').innerText = `Redirecting to Download in ${timeLeft}s...`;
+                document.getElementById('ad-timer').innerText = `Redirecting in ${timeLeft}s...`;
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     overlay.style.display = 'none';
@@ -194,20 +209,19 @@
             if (event.key === 'Enter') {
                 searchKeyword = document.getElementById('search-input').value;
                 if(searchKeyword) {
+                    document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
                     resetAndLoad('Search');
-                    document.getElementById('main-title').innerText = `Search results for: ${searchKeyword}`;
+                    document.getElementById('main-title').innerText = `Search: ${searchKeyword}`;
                 }
             }
         }
 
-        // Infinite Scroll
         window.addEventListener('scroll', () => {
             if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
                 loadMovies();
             }
         });
 
-        // Start
         loadMovies();
     </script>
 </body>
